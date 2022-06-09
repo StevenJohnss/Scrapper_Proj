@@ -7,4 +7,85 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// I had to remove the code based on the client request
+model Component {
+  id                         Int              @id @default(autoincrement())
+  name                       String           @db.VarChar(500)
+  service                    Int
+  status                     Component_status @default(UP)
+  createdAt                  DateTime?        @default(now())
+  updatedAt                  DateTime?
+  service_componentToservice Service          @relation(fields: [service], references: [id], map: "Component_service_fkey")
+  report                     Report[]
+
+  @@index([service], map: "Component_service_fkey")
+}
+
+model Issue {
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(500)
+  serviceId  Int
+  resolvedAt DateTime?
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime?
+  service    Service   @relation(fields: [serviceId], references: [id], map: "Issue_serviceId_fkey")
+
+  @@index([serviceId], map: "Issue_serviceId_fkey")
+}
+
+model Report {
+  id                          Int        @id @default(autoincrement())
+  ip                          String?
+  notes                       String?
+  component                   Int?
+  service                     Int
+  createdAt                   DateTime?  @default(now())
+  updatedAt                   DateTime?
+  component_componentToreport Component? @relation(fields: [component], references: [id], map: "Report_component_fkey")
+  service_reportToservice     Service    @relation(fields: [service], references: [id], map: "Report_service_fkey")
+
+  @@index([component], map: "Report_component_fkey")
+  @@index([service], map: "Report_service_fkey")
+}
+
+model Service {
+  id                Int                        @id @default(autoincrement())
+  name              String                     @db.VarChar(500)
+  slug              String                     @unique
+  logo              String?                    @db.VarChar(500)
+  status            Service_status             @default(UP)
+  website           String?                    @db.VarChar(500)
+  data_pageUrl      String?                    @db.VarChar(500)
+  twitter           String?                    @db.VarChar(500)
+  facebook          String?                    @db.VarChar(500)
+  statusPageUrl     String?
+  statusPageService Service_statusPageService?
+  statusPageId      String?
+  createdAt         DateTime?                  @default(now())
+  updatedAt         DateTime?
+  component         Component[]
+  issue             Issue[]
+  report            Report[]
+}
+
+model Myusers {
+  id       Int     @id @default(autoincrement())
+  username String? @db.VarChar(355)
+}
+
+enum Component_status {
+  UP
+  DOWN
+}
+
+enum Service_status {
+  UP
+  DOWN
+}
+
+enum Service_statusPageService {
+  INSTATUS
+  STATUSPAGE
+  CACHET
+  HUND
+  STATUSIO
+}
